@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Press+Start+2P">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <title>🔐 Secure BTC Wallet</title>
+    <style>
+      td {
+        text-align: center;
+        vertical-align: top;
+        width: 33%;
+      }
+      h3 {
+        text-decoration: underline;
+      }
+      body {
+        overflow-y: hidden;
+        overflow-x: hidden;
+      }
+      body::after {
+  content: '';
+  display: block;
+  height: 50px; /* Set same as footer's height */
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  background-color: papayawhip;
+  padding: 5px;
+  font-size:0.5em;
+  text-align: center;
+}
+    </style>
+    <script src="bip39check.js"></script>
+    <script src="seedgen.js"></script>
+    <script src="checkUpdates.js"></script>
+    <script>
+      
+      var seed;
+      var addr;
+      var m = new Mnemonic("english");
+
+      const switch_page = () => {
+        if(!document.getElementById('is_checked').checked) {
+          alert("Make sure this is written on a piece of paper");
+          return;
+        }
+        if(!m.check(document.getElementById('seedphrase').value)) {
+          alert("Invalid seed phrase");
+          return;
+        }
+        if(document.getElementById('seedphrase').value != "") {
+          seed = document.getElementById('seedphrase').value;
+          window.localStorage.setItem("seed", seed);
+          window.electronAPI.setSeed(seed);
+          var res = window.electronAPI.seedToWallet(seed);
+          res.then(r=>{
+            addr = r.address;
+            window.localStorage.setItem("address", addr);
+            window.location.href='app.html';
+          });
+        }
+  
+      };
+
+      const import_wallet = () => {
+          document.getElementById('seedphrase').value = "";
+          document.getElementById('seedphrase').focus();
+      };
+
+      const loaded = () => {
+        seed = window.localStorage.getItem("seed");
+        addr = window.localStorage.getItem("address");
+        if(!seed) {
+          do {
+            seed = seedgen();
+          } while(!m.check(seed));
+          document.getElementById('seedphrase').value = seed;
+        }
+        else {
+          window.location.href='app.html';
+        }
+        checkUpdates();
+      }
+
+      
+    </script>
+  </head>
+  <body style="height: 600px; width:800px; margin:0; padding: 0" onload="loaded()">
+    <div id="welcome-page" style="padding:10px;">
+      <h3 >☀️ Let's start</h3>
+      
+      <p>If you already have a wallet, <a href="#" onclick="javascript:void(import_wallet())">import</a> it now. Otherwise here's your password. Make sure you write it down on a piece of paper.</p>
+      <div class="alert alert-primary" role="alert">
+        <h6>💡  <a href="#" onclick="javascript:void(document.getElementById('tips-content').classList=undefined)">Some useful tips to consider</a></h6>
+        <div id="tips-content" class="d-none">
+        <p>Here are some tips to keep your funds safe:</p>
+        <ul>
+          <li>Diversify your financial assets (say no to "all eggs in one basket")</li>
+          <li>Never keep all your bitcoins in a single wallet</li>
+          <li>Use safe cold wallets (like this one) *and* hardware wallets.</li>
+          <li>Pick a long unpredictable seed phrase manually and store it safely somewhere other than your computer or mobile phone. </li>
+          <li>If you can, prefer multisig wallets</li>
+        </ul>
+        </div>
+        </div>
+      <textarea style="width: 100%;" id="seedphrase"></textarea>
+      <br />
+      <input type="checkbox" id="is_checked" /> <a href="javascript:void(document.getElementById('is_checked').checked=1)">I have written it down</a> ✍️
+      <br /><br />
+      <button onclick="switch_page()">Continue</button>
+      
+  
+    </div>
+
+    <footer>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+  </body>
+</html>
