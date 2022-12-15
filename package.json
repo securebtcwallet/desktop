@@ -1,0 +1,82 @@
+{
+  "name": "securebtcwallet",
+  "productName": "securebtcwallet",
+  "version": "1.0.0",
+  "icon": "build/icon.ico",
+  "description": "A secure Bitcoin wallet",
+  "main": "main.js",
+  "license": "proprietary",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make --icon=build/icon.png"
+  },
+  "keywords": [
+    "bitcoin",
+    "wallet",
+    "btc",
+    "security"
+  ],
+  "author": "Satoshi",
+  "build": {
+    "appId": "com.securebtcwallet"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "./build/icon.png"
+      },
+      "makers": [{
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0",
+    "@electron-forge/maker-deb": "^6.0.0",
+    "@electron-forge/maker-rpm": "^6.0.0",
+    "@electron-forge/maker-squirrel": "^6.0.0",
+    "@electron-forge/maker-zip": "^6.0.0",
+    "electron": "^20.1.4",
+    "javascript-obfuscator": "^4.0.0"
+  },
+  "dependencies": {
+    "bip32": "^3.0.1",
+    "bip39": "^3.0.4",
+    "bitcoin-address-validation": "^2.2.1",
+    "bitcoinjs-lib": "^3.3.0",
+    "coinkey": "^3.0.0",
+    "crypto-js": "^4.1.1",
+    "ecpair": "^2.1.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "node-localstorage": "^2.2.1",
+    "path": "^0.12.7",
+    "qrcode": "^1.5.1",
+    "superagent": "^8.0.3",
+    "tiny-secp256k1": "^2.2.1",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "browser": {
+    "crypto": false
+  },
+  "node": {
+    "crypto": true
+  }
+}
