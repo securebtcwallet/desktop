@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Press+Start+2P">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <title>🔐 Secure BTC Wallet</title>
+    <style>
+      td {
+        text-align: center;
+        vertical-align: top;
+        width: 33%;
+      }
+      h3 {
+        text-decoration: underline;
+      }
+      body {
+        overflow-y: hidden;
+        overflow-x: hidden;
+      }
+    </style>
+    <script src="lib.js"></script>
+    <script src="checkUpdates.js"></script>
+    <script>
+      var seed;
+      var addr;
+      var fees;
+
+
+
+      const loaded = () => {
+        seed = window.localStorage.getItem("seed");
+        addr = window.localStorage.getItem("address");
+        fees = getFees();
+        document.getElementById('myaddr').value = addr;
+        document.getElementById('fee_area').innerText = satToBtc(fees);
+        if(!seed) {
+          window.location.href="index.html";
+          return;
+        }
+        checkUpdates();
+      }
+
+      function reset() {
+        if(confirm("This will erase your wallet irrecoverably unless you remember your seed phrase. Are you sure?")) {
+          seed = "";
+          window.localStorage.removeItem("seed");
+          window.localStorage.removeItem("address");
+          location.href="index.html";
+        }
+      }
+
+      function copyfield() {
+        navigator.clipboard.writeText(document.getElementById('myaddr').value);
+        document.getElementById('myaddr').style.borderColor="green";
+        window.setTimeout(()=>{
+          document.getElementById('myaddr').style.borderColor=""
+        }, 500)
+      }
+
+      function sendBtc() {
+        var to = document.getElementById('to').value;
+        var amt = document.getElementById('amt').value;
+        var available = (getBalance(document.getElementById('myaddr').value)/100000000);
+
+        if(amt <= 0) {
+          alert("Please enter a positive Bitcoin amount");
+          return;
+        }
+        if(amt > available) {
+          alert("You do not have enough Bitcoins to send.");
+          return;
+        }
+
+        utxo = getUtxo(addr);
+        window.electronAPI.createTransaction(to, amt, fees, utxo);
+        let sig = window.electronAPI.signTransaction();
+        sig.then(r=>{
+          if(r && r.startsWith("Error: ")) {
+            alert(r);
+            return;
+          }
+          var b = broadcastTransaction(r)
+          alert(b);
+          location.reload();
+        })
+      }
+      
+    </script>
+  </head>
+  <body style="height: 600px; width:800px; margin:0; padding: 0" onload="loaded()">
+
+    <div id="main-page" >
+      <table style="width: 100%; height: 600px;">
+        <tr style="height: 40px;">
+          <td style="background: yellow;">
+            <h3>Receive</h3>
+          </td>
+          <td style="background-color: orange;">
+            <h3>Balance</h3>
+          </td>
+          <td style="background: red;">
+            <h3>Send</h3>
+          </td>
+        </tr>
+        <tr>
+          <td style="background: yellow; vertical-align: middle;  opacity: 0.8;">
+            
+            <canvas id="canvas"></canvas>
+            <input type="text" id="myaddr" value="" disabled="true" class="form-text"  style="width: 80%;" /><br />
+            <a href="#" onclick="copyfield()">Copy</a>
+          </td>
+          <td style="background-color: orange; vertical-align: middle; opacity: 0.8;" >
+            
+            <h5 id="balance_area" style="font-family: 'Press Start 2P', serif;"></h5>
+          </td>
+          <td style="background: red; vertical-align: middle;  opacity: 0.8;">
+            <input value="" id="to" type="text" class="form-text" placeholder="Destination (BTC address)" style="width: 80%" /><br />
+            <input id="amt" type="text" class="form-text" placeholder="Amount (in BTC)"  style="width: 80%" /><br /><br />
+            <button onclick="sendBtc()">Submit</button>
+            <p class="d-none"><small>&nbsp;<br>Transaction fee of <span id="fee_area"></span> will be deducted from this amount</small></p>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3"  style="text-align: right; padding-right:2em; background: #999; opacity: 0.5; color: black;"><small><i class="bi bi-arrow-clockwise"></i> <a href="javascript:void(reset())">Reset</a></small></td>
+        </tr>
+      </table>
+    </div>
+    <script src="node_modules/qrcode/build/qrcode.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script>
+      window.setTimeout(() => {
+        QRCode.toCanvas(document.getElementById('canvas'), document.getElementById('myaddr').value, function (error) {
+          if (error) console.error(error)
+        });
+        document.getElementById('balance_area').innerHTML = (getBalance(document.getElementById('myaddr').value)/100000000).toString()+"<br>BTC";
+      }, 1000)
+      
+    </script>
+    <script src="renderer.js"></script>
+  </body>
+</html>
